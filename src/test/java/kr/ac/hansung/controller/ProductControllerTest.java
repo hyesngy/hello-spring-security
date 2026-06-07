@@ -1,6 +1,9 @@
 package kr.ac.hansung.controller;
 
 import kr.ac.hansung.entity.Product;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import kr.ac.hansung.service.ProductService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -53,14 +56,15 @@ class ProductControllerTest {
     @WithMockUser(roles = "USER")
     @DisplayName("인증된 사용자 - 상품 목록 조회 성공 (200)")
     void listProducts_authenticated_returns200() throws Exception {
-        given(productService.findAll()).willReturn(List.of(
+        Page<Product> page = new PageImpl<>(List.of(
             new Product("Spring Boot 4 교재", 35000, "실습서", 50)
         ));
+        given(productService.getProducts(any(Pageable.class))).willReturn(page);
 
         mockMvc.perform(get("/products"))
             .andExpect(status().isOk())
             .andExpect(view().name("products/list"))
-            .andExpect(model().attributeExists("products"));
+            .andExpect(model().attributeExists("productPage"));
     }
 
     @Test
