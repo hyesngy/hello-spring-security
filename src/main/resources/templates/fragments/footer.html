@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<!--
+  공용 푸터 프래그먼트.
+  모든 페이지 하단에 [학번 / 성명 / 실습 수행 일시]를 표시한다.
+  - 서버 시각(currentTime)은 LocalDateTimeControllerAdvice 가 모든 모델에 자동 주입한다.
+  - 실시간 시계(초 단위 갱신)는 하단 <script> 가 1초마다 갱신한다.
+-->
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<footer th:fragment="siteFooter" class="mt-5 py-3 text-center"
+        style="background:#0f3460;color:#fff;font-size:.9rem;">
+    <div class="container">
+        실습 수행 일시:
+        <span id="liveClock" th:text="${currentTime}">2026년 06월 07일 (일) 오후 02:34:17</span>
+        &nbsp;│&nbsp; 학번: 2191188</strong>
+        &nbsp;│&nbsp; 성명: <strong>윤혜성</strong>
+    </div>
+    <script>
+        (function () {
+            const days = ['일', '월', '화', '수', '목', '금', '토'];
+            function tick() {
+                const n = new Date();
+                const y = n.getFullYear();
+                const mo = String(n.getMonth() + 1).padStart(2, '0');
+                const d = String(n.getDate()).padStart(2, '0');
+                const dow = days[n.getDay()];
+                let h = n.getHours();
+                const ampm = h < 12 ? '오전' : '오후';
+                h = h % 12; if (h === 0) h = 12;
+                const hh = String(h).padStart(2, '0');
+                const mi = String(n.getMinutes()).padStart(2, '0');
+                const ss = String(n.getSeconds()).padStart(2, '0');
+                const el = document.getElementById('liveClock');
+                if (el) el.textContent = `${y}년 ${mo}월 ${d}일 (${dow}) ${ampm} ${hh}:${mi}:${ss}`;
+            }
+            tick();
+            setInterval(tick, 1000);
+        })();
+    </script>
+</footer>
+</body>
+</html>
