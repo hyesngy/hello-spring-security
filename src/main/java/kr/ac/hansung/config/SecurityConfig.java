@@ -32,8 +32,12 @@ public class SecurityConfig {
                 .requestMatchers("/", "/login", "/signup",
                                  "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/products/add", "/products/*/delete").hasRole("ADMIN")
+                // 상품 등록 / 삭제 / 수정 은 ADMIN 전용
+                .requestMatchers("/products/add",
+                                 "/products/*/delete",
+                                 "/products/*/edit").hasRole("ADMIN")   // ← 신규 추가
                 .requestMatchers(HttpMethod.POST, "/products").hasRole("ADMIN")
+                // 비밀번호 변경 등 그 외 모든 요청은 인증된 사용자만
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -49,6 +53,8 @@ public class SecurityConfig {
                 .deleteCookies("JSESSIONID")
                 .permitAll()
             )
+            // 권한 부족(403) 시 접근 거부 안내 페이지로 이동
+            .exceptionHandling(ex -> ex.accessDeniedPage("/access-denied"))
             .userDetailsService(userDetailsService);
 
         return http.build();
