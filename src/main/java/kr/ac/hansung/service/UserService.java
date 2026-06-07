@@ -6,6 +6,7 @@ import kr.ac.hansung.entity.User;
 import kr.ac.hansung.repository.RoleRepository;
 import kr.ac.hansung.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,5 +38,26 @@ public class UserService {
 
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
+    }
+
+    /**
+     * 비밀번호 변경.
+     * 1) 이메일로 사용자 조회
+     * 2) BCryptPasswordEncoder.matches(평문, 해시) 로 현재 비밀번호 검증
+     *    - BCrypt 해시에는 salt 가 포함되어 있어 같은 평문이라도 해시값이 매번 다르므로
+     *      단순 문자열 비교(equals)가 아니라 반드시 matches() 로 검증해야 한다.
+     * 3) 새 비밀번호를 encode() 로 해싱하여 저장
+     */
+    @Transactional
+    public void changePassword(String email, String currentPassword, String newPassword) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new UsernameNotFoundException(email));
+
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 }
